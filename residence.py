@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 @author: xin
+@python3.7.2
 @ 参考 https://github.com/Jack-Cherish/python-spider
 """
 from splinter.browser import Browser
 from time import sleep
-
+import configparser
 
 class Residence(object):
 	driver_name = ''
@@ -71,11 +72,14 @@ class Residence(object):
 
 
 if __name__ == '__main__':
+	cf = configparser.ConfigParser()
+	# residence.ini 编码格式：utf-8 （无BOM）
+	cf.read("residence.ini", encoding='utf-8')
 	# 用户名，密码
-	username = u"1123"
-	passwd = u"1123"
+	username = cf.get(u"Config", "username")
+	passwd = cf.get("Config", "password")
 	# 申请人姓名，身份证号
-	permitname = u"1123"
-	idcard = u"1123"
+	permitname = cf.get("Config", "proposer")
+	idcard = cf.get("Config", "idcard")
 	residence = Residence()
 	residence.start(username, passwd, permitname, idcard)
