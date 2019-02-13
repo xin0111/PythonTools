@@ -15,7 +15,7 @@ class Residence(object):
 	refresh_count = 1
 
 	def __init__(self):
-		# http: // chromedriver.storage.googleapis.com / index.html?path = 2.20 /
+		# http://chromedriver.storage.googleapis.com/index.html?path=2.20/
 		# chromedriver.exe 放置在 python.exe 所在路径
 		self.driver_name = 'chrome'
 
