@@ -36,8 +36,8 @@ class Residence(object):
 	def permit(self, permitname, idcard):
 		if self.browser.find_by_id('mainFrame'):
 			with self.browser.get_iframe('mainFrame') as frame:
-				# 初次申请（新办）
 				try:
+					# 初次申请（新办）
 					frame.find_by_xpath('//select[@id="type"]/option')[1].click()
 					wait_count = 1
 					while True:
