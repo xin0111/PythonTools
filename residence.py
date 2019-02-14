@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 @author: xin
-@python3.7.2
+@ python3
 @ 参考 https://github.com/Jack-Cherish/python-spider
 """
 from splinter.browser import Browser
@@ -17,7 +17,8 @@ class Residence(object):
 
 	def __init__(self):
 		# http://chromedriver.storage.googleapis.com/index.html?path=2.20/
-		# chromedriver.exe 放置在 python.exe 所在路径
+		# 下载的 chromedriver.exe 需要和安装的chrome版本匹配
+		# chromedriver.exe 放置在 python.exe 所在路径，
 		self.driver_name = 'chrome'
 
 	def login(self, username, passwd):
@@ -36,21 +37,33 @@ class Residence(object):
 		if self.browser.find_by_id('mainFrame'):
 			with self.browser.get_iframe('mainFrame') as frame:
 				# 初次申请（新办）
-				frame.find_by_xpath('//select[@id="type"]/option')[1].click()
-				if frame.find_by_text(u"可预约"):
-					frame.find_by_text(u"可预约").click()
-					# 业务预约
-					frame.fill("0_0", permitname)
-					frame.fill("idcard_0_0", idcard)
-					# 确认预约
-					frame.find_by_id("btnSave").click()
-					return True
-				else:
-					sleep(1)
-					print(u"刷新页面 %d..." % self.refresh_count)
+				try:
+					frame.find_by_xpath('//select[@id="type"]/option')[1].click()
+					wait_count = 1
+					while True:
+						print(u"等待 %d" % wait_count)
+						wait_count += 1
+						if frame.find_by_text(u"已约满"):
+							break
+					if frame.find_by_text(u"可预约"):
+						frame.find_by_text(u"可预约").click()
+						# 业务预约
+						frame.fill("0_0", permitname)
+						frame.fill("idcard_0_0", idcard)
+						# 确认预约
+						frame.find_by_id("btnSave").click()
+						return True
+					else:
+						sleep(1)
+						print(u"刷新页面 %d..." % self.refresh_count)
+						frame.click_link_by_href("/Residence/a/rrs/reservation/form")
+						self.refresh_count += 1
+						return False
+				except Exception as e:
+					print(u"刷新失败！")
 					frame.execute_script("window.location.href = \"/Residence/a/rrs/reservation/form\";")
-					self.refresh_count += 1
 					return False
+
 
 	def start(self, username, passwd, permitname, idcard):
 		self.browser = Browser(driver_name=self.driver_name)
