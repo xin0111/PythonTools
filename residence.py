@@ -13,6 +13,8 @@ class Residence(object):
 	"""网址"""
 	login_url = "http://203.86.55.48/Residence"
 	initmy_url = "http://203.86.55.48/Residence/a?login"
+	order_url = "http://203.86.55.48/Residence/a/rrs/reservation/form"
+	order_script = "window.location.href = \"/Residence/a/rrs/reservation/form\";"
 	refresh_count = 1
 
 	def __init__(self):
@@ -33,39 +35,40 @@ class Residence(object):
 			else:
 				break
 
-	def permit(self, permitname, idcard):
+	def permit(self, proposer, idcard):
 		if self.browser.find_by_id('mainFrame'):
 			with self.browser.get_iframe('mainFrame') as frame:
 				try:
 					# 初次申请（新办）
 					frame.find_by_xpath('//select[@id="type"]/option')[1].click()
 					wait_count = 1
-					while True:
-						print(u"等待 %d" % wait_count)
+					while frame.url == self.order_url:
+						print(u"查询状态 %d" % wait_count)
 						wait_count += 1
 						if frame.find_by_text(u"已约满"):
 							break
 					if frame.find_by_text(u"可预约"):
 						frame.find_by_text(u"可预约").click()
 						# 业务预约
-						frame.fill("0_0", permitname)
+						frame.fill("0_0", proposer)
 						frame.fill("idcard_0_0", idcard)
 						# 确认预约
 						frame.find_by_id("btnSave").click()
+						print(u"请确认预约结果")
 						return True
 					else:
 						sleep(1)
 						print(u"刷新页面 %d..." % self.refresh_count)
-						frame.click_link_by_href("/Residence/a/rrs/reservation/form")
+						frame.execute_script(self.order_script)
 						self.refresh_count += 1
 						return False
 				except Exception as e:
-					print(u"刷新失败！")
-					frame.execute_script("window.location.href = \"/Residence/a/rrs/reservation/form\";")
+					print(e)
+					print(u"刷新失败...")
+					frame.execute_script(self.order_script)
 					return False
 
-
-	def start(self, username, passwd, permitname, idcard):
+	def start(self, username, passwd, proposer, idcard):
 		self.browser = Browser(driver_name=self.driver_name)
 		self.browser.driver.set_window_size(1400, 1000)
 		# 登录
@@ -77,10 +80,10 @@ class Residence(object):
 			with self.browser.get_iframe('mainFrame') as frame:
 				# frame.find_by_id('cb').click()
 				# frame.find_by_id('tj').click()
-				frame.execute_script("window.location.href = \"/Residence/a/rrs/reservation/form\";")
+				frame.execute_script(self.order_script)
 		print(u"预约申请...")
 		while True:
-			if self.permit(permitname, idcard):
+			if self.permit(proposer, idcard):
 				break
 
 
@@ -92,7 +95,7 @@ if __name__ == '__main__':
 	username = cf.get(u"Config", "username")
 	passwd = cf.get("Config", "password")
 	# 申请人姓名，身份证号
-	permitname = cf.get("Config", "proposer")
+	proposer = cf.get("Config", "proposer")
 	idcard = cf.get("Config", "idcard")
 	residence = Residence()
-	residence.start(username, passwd, permitname, idcard)
+	residence.start(username, passwd, proposer, idcard)
