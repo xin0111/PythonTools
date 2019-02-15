@@ -57,7 +57,8 @@ class Residence(object):
 						print(u"请确认预约结果")
 						return True
 					else:
-						sleep(1)
+						if wait_count < 5:
+							sleep(1)
 						print(u"刷新页面 %d..." % self.refresh_count)
 						frame.execute_script(self.order_script)
 						self.refresh_count += 1
