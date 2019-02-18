@@ -51,7 +51,7 @@ class Residence(object):
 					if frame.find_by_text(u"可预约"):
 						wait_count = 1
 						frame.find_by_text(u"可预约").click()
-						while frame.url == self.reserve_url:
+						while True:
 							print(u"等待预约页面加载 %d " % wait_count)
 							wait_count += 1
 							if frame.find_by_id(u"idcard_0_0"):
