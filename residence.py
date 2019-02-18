@@ -15,6 +15,7 @@ class Residence(object):
 	initmy_url = "http://203.86.55.48/Residence/a?login"
 	order_url = "http://203.86.55.48/Residence/a/rrs/reservation/form"
 	order_script = "window.location.href = \"/Residence/a/rrs/reservation/form\";"
+	reserve_url = "http://203.86.55.48/Residence/a/rrs/reservation/reserveInfo"
 	refresh_count = 1
 
 	def __init__(self):
@@ -48,9 +49,9 @@ class Residence(object):
 						if frame.find_by_text(u"已约满"):
 							break
 					if frame.find_by_text(u"可预约"):
-						wait_count = 0
+						wait_count = 1
 						frame.find_by_text(u"可预约").click()
-						while True:
+						while frame.url == self.reserve_url:
 							print(u"等待预约页面加载 %d " % wait_count)
 							wait_count += 1
 							if frame.find_by_id(u"idcard_0_0"):
