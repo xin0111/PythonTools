@@ -48,7 +48,13 @@ class Residence(object):
 						if frame.find_by_text(u"已约满"):
 							break
 					if frame.find_by_text(u"可预约"):
+						wait_count = 0
 						frame.find_by_text(u"可预约").click()
+						while True:
+							print(u"等待预约页面加载 %d " % wait_count)
+							wait_count += 1
+							if frame.find_by_id(u"idcard_0_0"):
+								break
 						# 业务预约
 						frame.fill("0_0", proposer)
 						frame.fill("idcard_0_0", idcard)
@@ -57,9 +63,9 @@ class Residence(object):
 						print(u"请确认预约结果")
 						return True
 					else:
-						if wait_count < 5:
-							sleep(1)
 						print(u"刷新页面 %d..." % self.refresh_count)
+						if wait_count < 3:
+							sleep(1)						
 						frame.execute_script(self.order_script)
 						self.refresh_count += 1
 						return False
