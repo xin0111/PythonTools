@@ -5,6 +5,7 @@
 @ 参考 https://github.com/Jack-Cherish/python-spider
 """
 from splinter.browser import Browser
+from selenium.webdriver.support.wait import WebDriverWait
 from time import sleep
 import configparser
 from datetime import date
@@ -47,20 +48,16 @@ class Residence(object):
 					try:
 						# 初次申请（新办）
 						frame.find_by_xpath('//select[@id="type"]/option')[1].click()
-						wait_count = 1
-						while frame.url == self.order_url:
-							print(u"查询状态 %d" % wait_count)
-							wait_count += 1
-							if frame.find_by_text(u"已约满"):
-								break
+						# 等待加载
+						WebDriverWait(frame, 20).until(
+							lambda x: not x.find_by_text(u"已约满").is_empty()
+						)
 						if frame.find_by_text(u"可预约"):
-							wait_count = 1
 							frame.find_by_text(u"可预约").click()
-							while True:
-								print(u"等待预约页面加载 %d " % wait_count)
-								wait_count += 1
-								if frame.find_by_id(u"idcard_0_0"):
-									break
+							#等待时长20秒，默认0.5秒询问一次
+							WebDriverWait(frame, 20).until(
+								lambda x: not x.find_by_id("idcard_0_0").is_empty()
+								)
 							# 业务预约
 							frame.fill("0_0", proposer)
 							frame.fill("idcard_0_0", idcard)
@@ -70,8 +67,6 @@ class Residence(object):
 							break
 						else:
 							print(u"刷新页面 %d..." % self.refresh_count)
-							if wait_count < 3:
-								sleep(1)
 							frame.execute_script(self.order_script)
 							self.refresh_count += 1
 					except Exception as e:
@@ -119,7 +114,7 @@ class Residence(object):
 				# frame.find_by_id('tj').click()
 				frame.execute_script(self.order_script)
 		print(u"预约申请...")
-		self.permit_today(proposer, idcard)
+		self.permit(proposer, idcard)
 
 
 
