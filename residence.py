@@ -16,6 +16,8 @@ class Residence(object):
 	order_url = "http://203.86.55.48/Residence/a/rrs/reservation/form"
 	order_script = "window.location.href = \"/Residence/a/rrs/reservation/form\";"
 	reserve_url = "http://203.86.55.48/Residence/a/rrs/reservation/reserveInfo"
+	reserve_script = "submitData('\"+data[%d].id +\"','\"+data[%d].windowsId+\"','\"+data[%d].remainTime+\"')"
+	close_jBox_script = "window.jBox.close();"
 	refresh_count = 1
 
 	def __init__(self):
@@ -39,43 +41,43 @@ class Residence(object):
 	def permit(self, proposer, idcard):
 		if self.browser.find_by_id('mainFrame'):
 			with self.browser.get_iframe('mainFrame') as frame:
-				try:
-					# 初次申请（新办）
-					frame.find_by_xpath('//select[@id="type"]/option')[1].click()
-					wait_count = 1
-					while frame.url == self.order_url:
-						print(u"查询状态 %d" % wait_count)
-						wait_count += 1
-						if frame.find_by_text(u"已约满"):
-							break
-					if frame.find_by_text(u"可预约"):
+				while True:
+					try:
+						# 初次申请（新办）
+						frame.find_by_xpath('//select[@id="type"]/option')[1].click()
 						wait_count = 1
-						frame.find_by_text(u"可预约").click()
-						while True:
-							print(u"等待预约页面加载 %d " % wait_count)
+						while frame.url == self.order_url:
+							print(u"查询状态 %d" % wait_count)
 							wait_count += 1
-							if frame.find_by_id(u"idcard_0_0"):
+							if frame.find_by_text(u"已约满"):
 								break
-						# 业务预约
-						frame.fill("0_0", proposer)
-						frame.fill("idcard_0_0", idcard)
-						# 确认预约
-						frame.find_by_id("btnSave").click()
-						print(u"请确认预约结果")
-						return True
-					else:
-						print(u"刷新页面 %d..." % self.refresh_count)
-						if wait_count < 3:
-							sleep(1)						
-						# frame.execute_script(self.order_script)
-						frame.execute_script("gradeChange();")
-						self.refresh_count += 1
-						return False
-				except Exception as e:
-					print(e)
-					print(u"刷新失败...")
-					frame.execute_script(self.order_script)
-					return False
+						if frame.find_by_text(u"可预约"):
+							wait_count = 1
+							frame.find_by_text(u"可预约").click()
+							while True:
+								print(u"等待预约页面加载 %d " % wait_count)
+								wait_count += 1
+								if frame.find_by_id(u"idcard_0_0"):
+									break
+							# 业务预约
+							frame.fill("0_0", proposer)
+							frame.fill("idcard_0_0", idcard)
+							# 确认预约
+							frame.find_by_id("btnSave").click()
+							print(u"请确认预约结果")
+							break
+						else:
+							print(u"刷新页面 %d..." % self.refresh_count)
+							if wait_count < 3:
+								sleep(1)
+							frame.execute_script(self.order_script)
+							self.refresh_count += 1
+					except Exception as e:
+						print(e)
+						print(u"刷新失败...")
+						frame.execute_script(self.order_script)
+
+
 
 	def start(self, username, passwd, proposer, idcard):
 		self.browser = Browser(driver_name=self.driver_name)
@@ -91,9 +93,8 @@ class Residence(object):
 				# frame.find_by_id('tj').click()
 				frame.execute_script(self.order_script)
 		print(u"预约申请...")
-		while True:
-			if self.permit(proposer, idcard):
-				break
+		self.permit(proposer, idcard)
+
 
 
 if __name__ == '__main__':
