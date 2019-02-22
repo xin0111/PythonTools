@@ -7,6 +7,7 @@
 from splinter.browser import Browser
 from time import sleep
 import configparser
+from datetime import date
 
 class Residence(object):
 	driver_name = ''
@@ -15,6 +16,7 @@ class Residence(object):
 	initmy_url = "http://203.86.55.48/Residence/a?login"
 	order_url = "http://203.86.55.48/Residence/a/rrs/reservation/form"
 	order_script = "window.location.href = \"/Residence/a/rrs/reservation/form\";"
+	gradeChange_script = "gradeChange();"
 	reserve_url = "http://203.86.55.48/Residence/a/rrs/reservation/reserveInfo"
 	reserve_script = "submitData('\"+data[%d].id +\"','\"+data[%d].windowsId+\"','\"+data[%d].remainTime+\"')"
 	close_jBox_script = "window.jBox.close();"
@@ -77,6 +79,30 @@ class Residence(object):
 						print(u"刷新失败...")
 						frame.execute_script(self.order_script)
 
+	def permit_today(self, proposer, idcard):
+		if self.browser.find_by_id('mainFrame'):
+			with self.browser.get_iframe('mainFrame') as frame:
+				while True:
+					try:
+						frame.find_by_xpath('//select[@id="type"]/option')[1].click()
+						weekday = date.today().weekday() + 1
+						frame.execute_script(self.reserve_script % (weekday, weekday, weekday))
+						frame.execute_script(self.close_jBox_script)
+						if frame.find_by_id(u"idcard_0_0"):
+							# 业务预约
+							frame.fill("0_0", proposer)
+							frame.fill("idcard_0_0", idcard)
+							# 确认预约
+							frame.find_by_id("btnSave").click()
+							print(u"请确认预约结果")
+							break
+						print(u"刷新页面 %d..." % self.refresh_count)
+						frame.execute_script(self.gradeChange_script)
+						self.refresh_count += 1
+					except Exception as e:
+						print(e)
+						print(u"刷新失败...")
+						frame.execute_script(self.order_script)
 
 
 	def start(self, username, passwd, proposer, idcard):
@@ -93,7 +119,7 @@ class Residence(object):
 				# frame.find_by_id('tj').click()
 				frame.execute_script(self.order_script)
 		print(u"预约申请...")
-		self.permit(proposer, idcard)
+		self.permit_today(proposer, idcard)
 
 
 
