@@ -67,7 +67,8 @@ class Residence(object):
 						print(u"刷新页面 %d..." % self.refresh_count)
 						if wait_count < 3:
 							sleep(1)						
-						frame.execute_script(self.order_script)
+						# frame.execute_script(self.order_script)
+						frame.execute_script("gradeChange();")
 						self.refresh_count += 1
 						return False
 				except Exception as e:
