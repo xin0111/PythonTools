@@ -48,14 +48,17 @@ class Residence(object):
 					try:
 						# 初次申请（新办）
 						frame.find_by_xpath('//select[@id="type"]/option')[1].click()
-						# 等待加载
-						WebDriverWait(frame, 20).until(
+						# 获取alert对话框
+						driver = self.browser.driver
+						driver.switch_to.alert.accept()
+						# 等待加载，最长超时时间10s
+						WebDriverWait(frame, 10).until(
 							lambda x: not x.find_by_text(u"已约满").is_empty()
 						)
 						if frame.find_by_text(u"可预约"):
 							frame.find_by_text(u"可预约").click()
-							#等待时长20秒，默认0.5秒询问一次
-							WebDriverWait(frame, 20).until(
+							#等待时长10秒，默认0.5秒询问一次
+							WebDriverWait(frame, 10).until(
 								lambda x: not x.find_by_id("idcard_0_0").is_empty()
 								)
 							# 业务预约
@@ -128,5 +131,6 @@ if __name__ == '__main__':
 	# 申请人姓名，身份证号
 	proposer = cf.get("Config", "proposer")
 	idcard = cf.get("Config", "idcard")
+	print(u"申请人：", proposer)
 	residence = Residence()
 	residence.start(username, passwd, proposer, idcard)
